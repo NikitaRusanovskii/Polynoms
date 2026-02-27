@@ -38,6 +38,13 @@ class Monomial {
         friend Monomial operator*(const Monomial& m, double coefficient);
         friend Monomial operator/(const Monomial& m, double coefficient);
 
+        bool operator<(const Monomial& m1) const;
+        bool operator>(const Monomial& m1) const;
+        bool operator==(const Monomial& m1) const;
+        bool operator!=(const Monomial& m1) const;
+        bool operator<=(const Monomial& m1) const;
+        bool operator>=(const Monomial& m1) const;
+
         Monomial& operator+=(const Monomial& other);
         Monomial& operator-=(const Monomial& other);
         Monomial& operator*=(const Monomial& other);

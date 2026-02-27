@@ -2,6 +2,31 @@
 #include <Node.hpp>
 #include <stdexcept>
 #include <iostream>
+#include <functional>
+
+
+template<class T>
+class Iterator {
+    private:
+        using TNode = LNode<T>;
+        TNode* node;
+    public:
+        Iterator(TNode* node): node(node){}
+
+
+        bool has_next() { return (node != nullptr); }
+        T next() {
+            if(end()){
+                throw -1;
+            }
+            T current = node->value;
+            node = node->next;
+            return current;
+        }
+        bool end() {
+            return (node == nullptr);
+        }
+};
 
 
 template<class T>
@@ -9,36 +34,58 @@ class LinkedList {
     private:
         using TNode = LNode<T>;
         TNode* create(T value) {
-            TNode* tmp = new TNode(value);
-            return tmp;
+            return new TNode(value);
         }
         TNode* head;
-        size_t list_size;
+        size_t _size;
     public:
         void push_back(T value) {
-            TNode* node = create(value);
-            list_size++;
-            if (!head) head = node;
-            else {
-                TNode* current = head;
-                while(current->next) {
-                    current = current->next;
-                }
-                current->next = node;
+            _size++;
+            TNode* new_node = create(value);
+            if(!head) {
+                head = new_node;
+                return;
             }
+            TNode* current = head;
+            while(current->next) {
+                current = current->next;
+            }
+            current->next = new_node;
         }
 
         void push_front(T value) {
+            _size++;
             TNode* node = create(value);
-            list_size++;
-            if(!head) head = node;
+            if(!head) {
+                head = node;
+            }
             else { 
                 node->next = head;
                 head = node;
             }
         }
 
+        void ordered_push(T value, std::function<bool(T a, T b)> comparator) {
+            _size++;
+            TNode* node = create(value);
+            
+            if(!head || comparator(head->value, node->value)) {
+                node->next = head;
+                head = node;
+                return;
+            }
+            else {
+                TNode* current = head;
+                while(current->next && comparator(current->next->value, node->value)) {
+                    current = current->next;
+                }
+                node->next = current->next;
+                current->next = node;
+            }
+        }
+
         bool search(T value) {
+            if(!head) return false;
             TNode* current = head;
             while(current->next) {
                 if(current->value == value) return true;
@@ -48,6 +95,7 @@ class LinkedList {
         }
 
         void remove(T value) {
+            if(!head) return;
             TNode* current = head;
             if (current->value == value) {
                 head = head->next;
@@ -60,6 +108,7 @@ class LinkedList {
                     delete tmp;
                 }
             }
+            _size--;
         }
 
         void clear() {
@@ -68,37 +117,53 @@ class LinkedList {
                 head = head->next;
                 delete tmp;
             }
-            list_size = 0;
+            _size = 0;
         }
 
-        size_t size() {
-            return list_size;
+        size_t size() const {
+            return _size;
         }
 
         bool empty() {
-            return (head ? false : true);
+            return (_size==0);
         }
 
-        friend std::ostream& operator<<(std::ostream& ostr, const LinkedList& l) {
-            TNode* temp = l.head;
-            while(temp) {
-                ostr << "[" << temp->value << "] ";
-                temp = temp->next;
+        friend std::ostream& operator<<(std::ostream& ostr, LinkedList& l) {
+            Iterator<T> iter = l.iterator();
+            while(iter.has_next()) {
+                ostr << "[" << iter.next() << "] ";
             }
             ostr << "\n";
             return ostr;
         }
 
+        Iterator<T> iterator() {
+            return Iterator<T>(head);
+        }
 
-        LinkedList(T value): head(create(value)), list_size(0) {}
-        LinkedList(): head(nullptr), list_size(0) {}
 
-        LinkedList(const LinkedList& l) {
-            TNode* temp = l->head;
-            list_size = l.list_size;
+        LinkedList(T value): head(nullptr), _size(0) {}
+        LinkedList(): head(nullptr), _size(0) {}
+
+        LinkedList(const LinkedList& l): _size(0) {
+            head = nullptr;
+            TNode* temp = l.head;
+            _size = l.size();
             while(temp) {
                 push_back(temp->value);
+                temp = temp->next;
             }
+        }
+
+        LinkedList& operator=(const LinkedList& l) {
+            if (this == &l) return *this;
+            _size = l._size;
+            TNode* tmp = l.head;
+            while(tmp) {
+                push_back(tmp->value);
+                tmp = tmp->next;
+            }
+            return *this;
         }
 
         ~LinkedList() {

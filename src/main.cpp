@@ -1,26 +1,31 @@
-#include <Monomial.hpp>
 #include <iostream>
-#include <LinkedList.hpp>
+#include <Polynomial.hpp>
 
 
 using namespace std;
 
 
 int main() {
-    LinkedList<int> my_list;
-    my_list.push_back(1);
-    my_list.push_back(2);
-    my_list.push_back(3);
-    my_list.push_back(4);
-    my_list.push_back(5);
-    my_list.push_front(1);
-    my_list.push_front(2);
-    my_list.push_front(3);
-    my_list.push_front(4);
-    my_list.push_front(5);
 
-    cout << my_list << "size: " << my_list.size() << endl;
-    my_list.clear();
+    Polynomial p1;
+    p1.add(1.0, 1, 2, 3);
+    p1.add(1.0, 2, 2, 3);
+    p1.add(1.0, 3, 2, 3);
 
-    cout << "size: " << my_list.size() << endl;
+    Polynomial p2;
+    p2.add(1.0, 1, 2, 3);
+    p2.add(1.0, 2, 2, 3);
+    p2.add(1.0, 3, 2, 3);
+
+    cout << p1;
+    cout << p2;
+
+    Polynomial p3;
+    try{
+        p3 = p2 + p1;
+        cout << p3;
+    }
+    catch (...) {
+        cout << "ватафак мазафака";
+    }
 }

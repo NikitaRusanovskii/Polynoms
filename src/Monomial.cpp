@@ -1,4 +1,5 @@
 #include <Monomial.hpp>
+#include <math.h>
 
 /*
 unsigned char Monomial::transformation_of_the_degree(signed char degree) {
@@ -15,8 +16,15 @@ signed char Monomial::get_degree(int place) {
 */
 
 signed char Monomial::operator[](size_t index) const {
-    if (index < 0 || index > 3) throw -1;
+    if (index < 0 || index > 3) {
+        std::cout << "operator[]";
+        throw -1;
+    }
     return degrees.degree[index] + -1 * abs(LOWER_BOUND_OF_THE_DEGREE);
+}
+
+double Monomial::solve(double x_value, double y_value, double z_value) {
+    return (coefficient * pow(x_value, (*this)[0]) * pow(y_value, (*this)[1]) * pow(z_value, (*this)[2]));
 }
 
 signed char transform_degree(signed char value) {
@@ -40,9 +48,7 @@ void Monomial::change_coefficient(double _coefficient)
     coefficient = _coefficient;
 }
 
-int compare(Monomial a, Monomial b) {
-
-    //std::cout << a.degrees.storage << "\n" << b.degrees.storage;
+int compare(Monomial  a, Monomial b) {
     return (a.degrees.storage - b.degrees.storage);
 }
 
@@ -55,6 +61,7 @@ Monomial operator+(const Monomial& m1, const Monomial& m2) {
         m.change_degree(transform_degree(m1[2]), 2);
     }
     else {
+        std::cout << "operator+";
         throw -1; // soon edit this;
     }
     return m;
@@ -68,6 +75,7 @@ Monomial operator-(const Monomial& m1, const Monomial& m2) {
         m.change_degree(transform_degree(m1[2]), 2);
     }
     else {
+        std::cout << "operator-";
         throw -1; // soon edit this;
     }
     return m;
@@ -82,6 +90,7 @@ Monomial operator*(const Monomial& m1, const Monomial& m2) {
         m.change_degree(transform_degree(m1[2] + m2[2]), 2);
     }
     else {
+        std::cout << "operator*";
         throw -1; // soon edit this;
     }
     return m;
@@ -95,6 +104,7 @@ Monomial operator/(const Monomial& m1, const Monomial& m2) {
         m.change_degree(transform_degree(m1[2] - m2[2]), 2);
     }
     else {
+        std::cout << "operator/";
         throw -1; // soon edit this;
     }
     return m;
@@ -136,7 +146,31 @@ Monomial& Monomial::operator/=(double coefficient){
     return *this;
 }
 
+bool Monomial::operator<(const Monomial& m1) const {
+    return (compare(*this, m1) < 0 ? true : false);
+}
+
+bool Monomial::operator>(const Monomial& m1) const {
+    return (compare(*this, m1) > 0 ? true : false);
+}
+
+bool Monomial::operator==(const Monomial& m1) const {
+    return (compare(*this, m1) == 0 ? true : false);
+}
+
+bool Monomial::operator!=(const Monomial& m1) const {
+    return (compare(*this, m1) != 0 ? true : false);
+}
+
+bool Monomial::operator<=(const Monomial& m1) const {
+    return ((compare(*this, m1) < 0 || compare(*this, m1) == 0) ? true : false);
+}
+
+bool Monomial::operator>=(const Monomial& m1) const {
+    return ((compare(*this, m1) > 0 || compare(*this, m1) == 0) ? true : false);
+}
+
 std::ostream& operator<<(std::ostream& ostr, const Monomial& m) {
-    ostr << m.coefficient << "x^" << (int)m[0] << "y^" << (int)m[1] << "z^" << (int)m[2];
+    ostr << "[" << m.coefficient << "x^" << (int)m[0] << "y^" << (int)m[1] << "z^" << (int)m[2] << "]";
     return ostr;
 }
