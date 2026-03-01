@@ -83,30 +83,18 @@ Monomial operator-(const Monomial& m1, const Monomial& m2) {
 }
 Monomial operator*(const Monomial& m1, const Monomial& m2) {
     Monomial m;
-    if (compare(m1, m2) == 0) {
-        m.change_coefficient(m1.coefficient * m2.coefficient);
-        m.change_degree(transform_degree(m1[0] + m2[0]), 0); // потом реализовать отбрасывание
-        m.change_degree(transform_degree(m1[1] + m2[1]), 1);
-        m.change_degree(transform_degree(m1[2] + m2[2]), 2);
-    }
-    else {
-        std::cout << "operator*";
-        throw -1; // soon edit this;
-    }
+    m.change_coefficient(m1.coefficient * m2.coefficient);
+    m.change_degree(transform_degree(m1[0] + m2[0]), 0); // потом реализовать отбрасывание
+    m.change_degree(transform_degree(m1[1] + m2[1]), 1);
+    m.change_degree(transform_degree(m1[2] + m2[2]), 2);
     return m;
 }
 Monomial operator/(const Monomial& m1, const Monomial& m2) {
     Monomial m;
-    if (compare(m1, m2) == 0) {
-        m.change_coefficient(m1.coefficient / m2.coefficient);
-        m.change_degree(transform_degree(m1[0] - m2[0]), 0); // потом реализовать отбрасывание
-        m.change_degree(transform_degree(m1[1] - m2[1]), 1);
-        m.change_degree(transform_degree(m1[2] - m2[2]), 2);
-    }
-    else {
-        std::cout << "operator/";
-        throw -1; // soon edit this;
-    }
+    m.change_coefficient(m1.coefficient / m2.coefficient);
+    m.change_degree(transform_degree(m1[0] - m2[0]), 0); // потом реализовать отбрасывание
+    m.change_degree(transform_degree(m1[1] - m2[1]), 1);
+    m.change_degree(transform_degree(m1[2] - m2[2]), 2);
     return m;
 }
 Monomial operator*(const Monomial& m, double coefficient) {
@@ -171,6 +159,6 @@ bool Monomial::operator>=(const Monomial& m1) const {
 }
 
 std::ostream& operator<<(std::ostream& ostr, const Monomial& m) {
-    ostr << "[" << m.coefficient << "x^" << (int)m[0] << "y^" << (int)m[1] << "z^" << (int)m[2] << "]";
+    ostr << "[" << m.coefficient << "*" << "x^" << (int)m[0] << "*" << "y^" << (int)m[1] << "*" <<  "z^" << (int)m[2] << "]";
     return ostr;
 }

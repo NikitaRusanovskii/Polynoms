@@ -2,8 +2,13 @@
 #include <Tools.hpp>
 
 
+Polynomial::Polynomial(Monomial m) {
+    add_monomial(m);
+}
+
+
 bool Polynomial::monomial_comparator(Monomial a, Monomial b) {
-    return a <= b;
+    return a >= b;
 }
 
 void Polynomial::add_monomial(Monomial m) {
@@ -18,78 +23,194 @@ double Polynomial::solve() {
     double result = 0.0;
     Iterator<Monomial> iter = monomials.iterator();
     while(!iter.end()) {
-        result += (iter.next()).solve(x, y, z);
+        result += (iter.current()).solve(x, y, z);
+        iter.next();
     }
     return result;
 }
 
+
+Polynomial operator+(Polynomial& p1, Monomial& m1) {
+    if (p1.size() == 0) return (Polynomial)m1;
+
+    Polynomial result;
+    Iterator<Monomial> iter = p1.iterator();
+
+    while(!iter.end()){
+        Monomial current = iter.current();
+        if (current == m1) {
+            result.add_monomial(m1 + current);
+            iter.next();
+        }
+        else if (m1 > current) {
+            result.add_monomial(m1);
+        }
+        else if (m1 < current) {
+            result.add_monomial(current);
+            iter.next();
+        }
+    }
+
+    return result;
+
+}
+
+Polynomial operator-(Polynomial& p1, Monomial& m1) {
+    if (p1.size() == 0) return (Polynomial)m1;
+
+    Polynomial result;
+    Iterator<Monomial> iter = p1.iterator();
+
+    while(!iter.end()){
+        Monomial current = iter.current();
+        if (current == m1) {
+            result.add_monomial(m1 - current);
+            iter.next();
+        }
+        else if (m1 > current) {
+            result.add_monomial(m1);
+        }
+        else if (m1 < current) {
+            result.add_monomial(current);
+            iter.next();
+        }
+    }
+
+    return result;
+
+}
+
+Polynomial operator*(Polynomial& p1, Monomial& m1) {
+    if (p1.size() == 0) return (Polynomial)m1;
+
+    Polynomial result;
+    Iterator<Monomial> iter = p1.iterator();
+
+    while(!iter.end()){
+        Monomial current = iter.current();
+        result.add_monomial(current * m1);
+        iter.next();
+    }
+
+    return result;
+
+}
+
+
 Polynomial operator+(Polynomial& p1, Polynomial& p2) {
-    if(p1.size() == 0) {
-        return p1;
-    }
-    else if (p2.size() == 0) {
-        return p2;
-    }
+    auto it1 = p1.iterator();
+    auto it2 = p2.iterator();
 
     Polynomial result;
 
-    Polynomial& short_ = (p1.size() < p2.size()) ? p1 : p2;
-    Polynomial& long_  = (p1.size() < p2.size()) ? p2 : p1;
+    while (!it1.end() && !it2.end()) {
+        Monomial m1 = it1.current();
+        Monomial m2 = it2.current();
+        if (m1 == m2) {
+            result.add_monomial(m1 + m2);
+            it1.next();
+            it2.next();
+        } else if (m1 > m2) {
+            result.add_monomial(m1);
+            it1.next();
+        } else {
+            result.add_monomial(m2);
+            it2.next();
+        }
+    }
+    while (!it1.end()) {
+        result.add_monomial(it1.current());
+        it1.next();
+    }
+    while (!it2.end()) {
+        result.add_monomial(it2.current());
+        it2.next();
+    }
 
-    Monomial current_element_from_long = {};
-    Monomial current_element_from_short = {};
-    
-    Iterator<Monomial> short_iter = short_.iterator();
-    Iterator<Monomial> long_iter = long_.iterator();
-    
-    if (!long_iter.end()) current_element_from_long = long_iter.next();
-    if (!short_iter.end()) current_element_from_short = short_iter.next();
-    
-    while(!short_iter.end()) {
-        if (current_element_from_long == current_element_from_short) {
-            result.monomials.push_back(current_element_from_long + current_element_from_short);
-            current_element_from_long = long_iter.next();
-            current_element_from_short = short_iter.next();
-        }
-        else if (current_element_from_long > current_element_from_short) {
-            result.monomials.push_back(current_element_from_long);
-            current_element_from_long = long_iter.next();
-        }
-        else if (current_element_from_long < current_element_from_short) {
-            result.monomials.push_back(current_element_from_short);
-            current_element_from_short = short_iter.next();
-        }
-        //std::cout << "Comparing: " << compare(current_element_from_long, current_element_from_short) << "\n";
-    }
-    while(!long_iter.end()) {
-        result.monomials.push_back(current_element_from_long);
-        current_element_from_long = long_iter.next();
-    }
     return result;
 }
-//Polynomial operator-(const Polynomial& p2, const Polynomial& p2) {
-//
-//}
-//Polynomial operator*(const Polynomial& p1, const Polynomial& p2) {
-//
-//}
-//Polynomial& Polynomial::operator+=(const Polynomial& p1) {
-//
-//}
-//Polynomial& Polynomial::operator-=(const Polynomial& p1) {
-//
-//}
-//Polynomial& Polynomial::operator*=(const Polynomial& p1) {}
+
+Polynomial operator-(Polynomial& p1, Polynomial& p2) {
+    auto it1 = p1.iterator();
+    auto it2 = p2.iterator();
+
+    Polynomial result;
+
+    while (!it1.end() && !it2.end()) {
+        Monomial m1 = it1.current();
+        Monomial m2 = it2.current();
+        if (m1 == m2) {
+            result.add_monomial(m1 - m2);
+            it1.next();
+            it2.next();
+        } else if (m1 > m2) {
+            result.add_monomial(m1);
+            it1.next();
+        } else {
+            result.add_monomial(m2);
+            it2.next();
+        }
+    }
+    while (!it1.end()) {
+        result.add_monomial(it1.current());
+        it1.next();
+    }
+    while (!it2.end()) {
+        result.add_monomial(it2.current());
+        it2.next();
+    }
+
+    return result;
+}
+
+
+Polynomial operator*(Polynomial& p1, Polynomial& p2) {
+    if (p1.size() == 0 || p2.size() == 0) return Polynomial(Monomial(0));
+
+    Polynomial result;
+    Iterator<Monomial> iter_p1 = p1.iterator();
+    Iterator<Monomial> iter_p2 = p2.iterator();
+
+    while(!iter_p1.end()) {
+        Monomial current = iter_p1.current();
+        iter_p1.next();
+        Polynomial mul = p2 * current;
+        result = result + mul;
+    }
+
+    return result;
+
+}
+Polynomial Polynomial::operator+=(Polynomial& p1){
+    return operator+(*this, p1);
+}
+Polynomial Polynomial::operator-=(Polynomial& p1) {
+    return operator-(*this, p1);
+}
+Polynomial Polynomial::operator*=(Polynomial& p1) {
+    return operator*(*this, p1);
+}
+
 
 std::ostream& operator<<(std::ostream& ostr, Polynomial& p) {
-    Iterator<Monomial> iter = p.monomials.iterator();
+    Iterator<Monomial> iter = p.iterator();
     if(!iter.end()) {
-        ostr << iter.next();
+        ostr << iter.current();
+        iter.next();
         while(!iter.end()) {
-            ostr << " + " << iter.next();
+            ostr << " + " << iter.current();
+            iter.next();
         }
 
         ostr << std::endl;
     }
     return ostr;
+}
+
+size_t Polynomial::size() {
+    return monomials.size();
+}
+
+Iterator<Monomial> Polynomial::iterator() {
+    return monomials.iterator();
 }

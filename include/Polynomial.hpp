@@ -17,24 +17,26 @@ class Polynomial {
         void add(double coefficient = 0, signed char x_degree = 0, signed char y_degree = 0, signed char z_degree = 0);
         double solve();
 
+        friend Polynomial operator+(Polynomial& p1, Monomial& m1);
+        friend Polynomial operator-(Polynomial& p1, Monomial& m1);
+        friend Polynomial operator*(Polynomial& p1, Monomial& m1);
 
         friend Polynomial operator+(Polynomial& p1, Polynomial& p2);
-        friend Polynomial operator-(const Polynomial& p1, const Polynomial& p2);
-        friend Polynomial operator*(const Polynomial& p1, const Polynomial& p2);
-        Polynomial& operator+=(const Polynomial& p1);
-        Polynomial& operator-=(const Polynomial& p1);
-        Polynomial& operator*=(const Polynomial& p1);
+        friend Polynomial operator-(Polynomial& p1, Polynomial& p2);
+        friend Polynomial operator*(Polynomial& p1, Polynomial& p2);
+        Polynomial operator+=(Monomial& m1);
+        Polynomial operator-=(Monomial& m1);
+        Polynomial operator*=(Monomial& m1);
+        Polynomial operator+=(Polynomial& p1);
+        Polynomial operator-=(Polynomial& p1);
+        Polynomial operator*=(Polynomial& p1);
 
         friend std::ostream& operator<<(std::ostream& ostr, Polynomial& p);
 
-        size_t size() {
-            return monomials.size();
-        }
-
-        Iterator<Monomial> iterator() {
-            return monomials.iterator();
-        }
+        size_t size();
+        Iterator<Monomial> iterator();
 
         Polynomial(double x = 0.0, double y = 0.0, double z = 0.0): x(x), y(y), z(z) {}
+        Polynomial(Monomial m);
 
 };

@@ -15,13 +15,14 @@ class Iterator {
 
 
         bool has_next() { return (node != nullptr); }
-        T next() {
-            if(end()){
+        void next() {
+            if(!has_next()){
                 throw -1;
             }
-            T current = node->value;
             node = node->next;
-            return current;
+        }
+        T current() {
+            return node->value;
         }
         bool end() {
             return (node == nullptr);
@@ -68,20 +69,18 @@ class LinkedList {
         void ordered_push(T value, std::function<bool(T a, T b)> comparator) {
             _size++;
             TNode* node = create(value);
-            
-            if(!head || comparator(head->value, node->value)) {
+            if (!head || comparator(value, head->value)) {
                 node->next = head;
                 head = node;
                 return;
             }
-            else {
-                TNode* current = head;
-                while(current->next && comparator(current->next->value, node->value)) {
-                    current = current->next;
-                }
-                node->next = current->next;
-                current->next = node;
+
+            TNode* current = head;
+            while (current->next && comparator(current->next->value, value)) {
+                current = current->next;
             }
+            node->next = current->next;
+            current->next = node;
         }
 
         bool search(T value) {
