@@ -130,7 +130,8 @@ class LinkedList {
         friend std::ostream& operator<<(std::ostream& ostr, LinkedList& l) {
             Iterator<T> iter = l.iterator();
             while(iter.has_next()) {
-                ostr << "[" << iter.next() << "] ";
+                ostr << "[" << iter.current() << "] ";
+                iter.next();
             }
             ostr << "\n";
             return ostr;
