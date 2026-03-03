@@ -1,12 +1,23 @@
 #pragma once
-#include <LinkedList.hpp>
+#include <Config.hpp>
 #include <Monomial.hpp>
 #include <iostream>
 
 
+#if USE_SKIP_LIST
+    #include <SkipList.hpp>
+    using List = SkipList<Monomial>;
+    using Iterator = SkipListIterator<Monomial>;
+#else
+    #include <LinkedList.hpp>
+    using List = LinkedList<Monomial>;
+    using Iterator = LinkedListIterator<Monomial>;
+#endif
+
+
 class Polynomial {
     private:
-        LinkedList<Monomial> monomials;
+        List monomials;
         
         static bool monomial_comparator(Monomial a, Monomial b);
         void add_monomial(Monomial m);
@@ -34,7 +45,7 @@ class Polynomial {
         friend std::ostream& operator<<(std::ostream& ostr, Polynomial& p);
 
         size_t size();
-        Iterator<Monomial> iterator();
+        Iterator iterator();
 
         Polynomial(double x = 0.0, double y = 0.0, double z = 0.0): x(x), y(y), z(z) {}
         Polynomial(Monomial m);

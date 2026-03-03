@@ -2,6 +2,17 @@
 #include <Tools.hpp>
 
 
+
+#if USE_SKIP_LIST
+    using List = SkipList<Monomial>;
+    using Iterator = SkipListIterator<Monomial>;
+#else
+    using List = LinkedList<Monomial>;
+    using Iterator = LinkedListIterator<Monomial>;
+#endif
+
+
+
 Polynomial::Polynomial(Monomial m) {
     add_monomial(m);
 }
@@ -21,7 +32,7 @@ void Polynomial::add(double coefficient, signed char x_degree, signed char y_deg
 
 double Polynomial::solve() {
     double result = 0.0;
-    Iterator<Monomial> iter = monomials.iterator();
+    Iterator iter = monomials.iterator();
     while(!iter.end()) {
         result += (iter.current()).solve(x, y, z);
         iter.next();
@@ -34,7 +45,7 @@ Polynomial operator+(Polynomial& p1, Monomial& m1) {
     if (p1.size() == 0) return (Polynomial)m1;
 
     Polynomial result;
-    Iterator<Monomial> iter = p1.iterator();
+    Iterator iter = p1.iterator();
 
     while(!iter.end()){
         Monomial current = iter.current();
@@ -59,7 +70,7 @@ Polynomial operator-(Polynomial& p1, Monomial& m1) {
     if (p1.size() == 0) return (Polynomial)m1;
 
     Polynomial result;
-    Iterator<Monomial> iter = p1.iterator();
+    Iterator iter = p1.iterator();
 
     while(!iter.end()){
         Monomial current = iter.current();
@@ -84,7 +95,7 @@ Polynomial operator*(Polynomial& p1, Monomial& m1) {
     if (p1.size() == 0) return (Polynomial)m1;
 
     Polynomial result;
-    Iterator<Monomial> iter = p1.iterator();
+    Iterator iter = p1.iterator();
 
     while(!iter.end()){
         Monomial current = iter.current();
@@ -168,8 +179,8 @@ Polynomial operator*(Polynomial& p1, Polynomial& p2) {
     if (p1.size() == 0 || p2.size() == 0) return Polynomial(Monomial(0));
 
     Polynomial result;
-    Iterator<Monomial> iter_p1 = p1.iterator();
-    Iterator<Monomial> iter_p2 = p2.iterator();
+    Iterator iter_p1 = p1.iterator();
+    Iterator iter_p2 = p2.iterator();
 
     while(!iter_p1.end()) {
         Monomial current = iter_p1.current();
@@ -193,7 +204,7 @@ Polynomial Polynomial::operator*=(Polynomial& p1) {
 
 
 std::ostream& operator<<(std::ostream& ostr, Polynomial& p) {
-    Iterator<Monomial> iter = p.iterator();
+    Iterator iter = p.iterator();
     if(!iter.end()) {
         ostr << iter.current();
         iter.next();
@@ -211,6 +222,6 @@ size_t Polynomial::size() {
     return monomials.size();
 }
 
-Iterator<Monomial> Polynomial::iterator() {
+Iterator Polynomial::iterator() {
     return monomials.iterator();
 }

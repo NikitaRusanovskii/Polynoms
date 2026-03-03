@@ -6,12 +6,12 @@
 
 
 template<class T>
-class Iterator {
+class LinkedListIterator {
     private:
         using TNode = LNode<T>;
         TNode* node;
     public:
-        Iterator(TNode* node): node(node){}
+        LinkedListIterator(TNode* node): node(node){}
 
 
         bool has_next() { return (node != nullptr); }
@@ -129,7 +129,7 @@ class LinkedList {
         }
 
         friend std::ostream& operator<<(std::ostream& ostr, LinkedList& l) {
-            Iterator<T> iter = l.iterator();
+            LinkedListIterator<T> iter = l.iterator();
             while(iter.has_next()) {
                 ostr << "[" << iter.current() << "] ";
                 iter.next();
@@ -138,8 +138,8 @@ class LinkedList {
             return ostr;
         }
 
-        Iterator<T> iterator() {
-            return Iterator<T>(head);
+        LinkedListIterator<T> iterator() {
+            return LinkedListIterator<T>(head);
         }
 
 
