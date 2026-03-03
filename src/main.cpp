@@ -7,8 +7,7 @@ using namespace std;
 
 
 int main() {
-    SkipList<int> sk;
-    sk.push_back(4);
-    sk.remove(4);
+    SkipList<Monomial> sk;
+    sk.push_back(Monomial(1, 1, 1, 1));
     cout << sk;
 }

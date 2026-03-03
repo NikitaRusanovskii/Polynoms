@@ -25,7 +25,7 @@ class Iterator {
             return node->value;
         }
         bool end() {
-            return (node == nullptr);
+            return (!has_next());
         }
 };
 
@@ -105,6 +105,7 @@ class LinkedList {
                     TNode* tmp = current->next;
                     current->next->next ? current->next = current->next->next : current->next = nullptr;
                     delete tmp;
+                    break;
                 }
             }
             _size--;

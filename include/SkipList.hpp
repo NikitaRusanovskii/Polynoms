@@ -6,13 +6,23 @@ template<class T>
 class SkipListIterator {
     private:
         using TNode = SNode<T>;
-        TNode* node;
+        TNode *node, *tail;
     public:
-        SkipListIterator(TNode* node): node(node){}
-        bool has_next();
-        void next();
-        std::variant<Infinity, T> current();
-        bool end();
+        SkipListIterator(TNode* node, TNode* tail): node(node), tail(tail) {}
+        bool has_next() { return node->next(0) != tail; }
+        void next() {
+            if (!has_next()) {
+                throw -1;
+            }
+            node = node->next(0);
+        }
+        std::variant<Infinity, T> current() {
+            if(!has_next()) {
+                throw -1;
+            }
+            return node->get_value();
+        }
+        bool end() { return node == tail; }
 };
 
 
@@ -37,7 +47,7 @@ class SkipList {
     public:
   
   
-      void push_back(T value) {
+        void push_back(T value) {
             TNode* current = head;
             TNode* new_node = create(value);
             int current_layer = MAX_LAYER_SKIP_LIST - 1;
@@ -97,11 +107,12 @@ class SkipList {
                 }
             }
 
-            for(size_t i = 0; i < current->active_layer; i++) {
+            for(size_t i = 0; i < to_remove->active_layer; i++) {
                 current->set_next(i, to_remove->next(i));
             }
 
             delete to_remove;
+            _size--;
         }
         void clear() {
             TNode* current = head->next(0);
@@ -131,7 +142,9 @@ class SkipList {
         }
 
 
-        SkipListIterator<T> iterator();
+        SkipListIterator<T> iterator() {
+            return SkipListIterator(head, tail);
+        }
 
 
         SkipList(T value): head(create(Infinity::MINUS_INFINITY, MAX_LAYER_SKIP_LIST)),
@@ -150,8 +163,26 @@ class SkipList {
                                         head->set_next(i, tail);
                                     }
                                 }
-        SkipList(const SkipList& s) = default;
-        SkipList& operator=(const SkipList& l) = default;
+        SkipList(const SkipList& s): head(create(Infinity::MINUS_INFINITY, MAX_LAYER_SKIP_LIST)),
+                                     tail(create(Infinity::PLUS_INFINITY, MAX_LAYER_SKIP_LIST)),
+                                     _size(0) {
+                                        
+                                        TNode* current = s.head;
+                                        while(current != s.tail) {
+                                            push_back(std::get<T>(current->get_value()));
+                                            current = current->next(0);
+                                        }
+        
+                                    }
+        SkipList& operator=(const SkipList& s) {
+            if (this == &s) return *this;
+            clear();
+            TNode* current = s.head;
+            while(current != s.tail) {
+                push_back(std::get<T>(current->get_value()));
+                current = current->next(0);
+            }
+        }
 
         ~SkipList() {
             clear();
