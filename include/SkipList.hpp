@@ -36,7 +36,7 @@ template <class T> class SkipListIterator
 	}
 	bool end()
 	{
-		return node == tail;
+		return !has_next();
 	}
 };
 
@@ -213,27 +213,30 @@ template <class T> class SkipList
 	SkipList(const SkipList &s)
 		: head(create(Infinity::MINUS_INFINITY, MAX_LAYER_SKIP_LIST)),
 		  tail(create(Infinity::PLUS_INFINITY, MAX_LAYER_SKIP_LIST)), _size(0)
-	{
+    {
+        for(size_t i = 0; i < MAX_LAYER_SKIP_LIST; i++) {
+            head->set_next(i, tail);
+        }
 
-		TNode *current = s.head->next(0);
-		while (current != s.tail)
-		{
-			push_back(std::get<T>(current->get_value()));
-			current = current->next(0);
-		}
+        TNode* current = s.head->next(0);
+        while(current != s.tail) {
+            push_back(std::get<T>(current->get_value()));
+            current = current->next(0);
+        }
 	}
 	SkipList &operator=(const SkipList &s)
 	{
-		if (this == &s)
-			return *this;
-		clear();
-		TNode *current = s.head;
-		while (current != s.tail)
-		{
-			push_back(std::get<T>(current->get_value()));
-			current = current->next(0);
-		}
-		return *this;
+        if (this == &s)
+            return *this;
+        
+        clear();
+        TNode* current = s.head->next(0);
+        while(current != s.tail) {
+            push_back(std::get<T>(current->get_value()));
+            current = current->next(0);
+        }
+        
+        return *this;
 	}
 
 	~SkipList()
