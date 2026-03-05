@@ -81,7 +81,9 @@ template <class T> class LinkedList
 		}
 	}
 
-	void ordered_push(T value, std::function<bool(T a, T b)> comparator)
+	void ordered_push(
+		T value,
+		std::function<bool(std::variant<Infinity, T> a, std::variant<Infinity, T> b)> comparator)
 	{
 		_size++;
 		TNode *node = create(value);
@@ -159,25 +161,31 @@ template <class T> class LinkedList
 		return (_size == 0);
 	}
 
-	friend std::ostream &operator<<(std::ostream &ostr, LinkedList &l)
+	friend std::ostream &operator<<(std::ostream &ostr, const LinkedList &l)
 	{
 		LinkedListIterator<T> iter = l.iterator();
-		while (iter.has_next())
+		if (iter.has_next())
 		{
-			ostr << "[" << iter.current() << "] ";
+			ostr << iter.current();
+			iter.next();
+		}
+		while (!iter.end())
+		{
+			ostr << " + " << iter.current();
 			iter.next();
 		}
 		ostr << "\n";
 		return ostr;
 	}
 
-	LinkedListIterator<T> iterator()
+	LinkedListIterator<T> iterator() const
 	{
 		return LinkedListIterator<T>(head);
 	}
 
 	LinkedList(T value) : head(nullptr), _size(0)
 	{
+		push_back(value);
 	}
 	LinkedList() : head(nullptr), _size(0)
 	{
@@ -187,7 +195,6 @@ template <class T> class LinkedList
 	{
 		head = nullptr;
 		TNode *temp = l.head;
-		_size = l.size();
 		while (temp)
 		{
 			push_back(temp->value);
@@ -199,7 +206,7 @@ template <class T> class LinkedList
 	{
 		if (this == &l)
 			return *this;
-		_size = l._size;
+		clear();
 		TNode *tmp = l.head;
 		while (tmp)
 		{

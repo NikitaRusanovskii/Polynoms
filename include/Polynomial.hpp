@@ -18,23 +18,22 @@ class Polynomial
   private:
 	List monomials;
 
-	static bool monomial_comparator(Monomial a, Monomial b);
+	static bool monomial_comparator(std::variant<Infinity, Monomial> a,
+									std::variant<Infinity, Monomial> b);
 	void add_monomial(Monomial m);
-
-	double x, y, z;
 
   public:
 	void add(double coefficient = 0, signed char x_degree = 0, signed char y_degree = 0,
 			 signed char z_degree = 0);
-	double solve();
+	double solve(double x = 0.0, double y = 0.0, double z = 0.0);
 
-	friend Polynomial operator+(Polynomial &p1, Monomial &m1);
-	friend Polynomial operator-(Polynomial &p1, Monomial &m1);
-	friend Polynomial operator*(Polynomial &p1, Monomial &m1);
+	friend Polynomial operator+(const Polynomial &p1, const Monomial &m1);
+	friend Polynomial operator-(const Polynomial &p1, const Monomial &m1);
+	friend Polynomial operator*(const Polynomial &p1, const Monomial &m1);
 
-	friend Polynomial operator+(Polynomial &p1, Polynomial &p2);
-	friend Polynomial operator-(Polynomial &p1, Polynomial &p2);
-	friend Polynomial operator*(Polynomial &p1, Polynomial &p2);
+	friend Polynomial operator+(const Polynomial &p1, const Polynomial &p2);
+	friend Polynomial operator-(const Polynomial &p1, const Polynomial &p2);
+	friend Polynomial operator*(const Polynomial &p1, const Polynomial &p2);
 	Polynomial operator+=(Monomial &m1);
 	Polynomial operator-=(Monomial &m1);
 	Polynomial operator*=(Monomial &m1);
@@ -42,12 +41,12 @@ class Polynomial
 	Polynomial operator-=(Polynomial &p1);
 	Polynomial operator*=(Polynomial &p1);
 
-	friend std::ostream &operator<<(std::ostream &ostr, Polynomial &p);
+	friend std::ostream &operator<<(std::ostream &ostr, const Polynomial &p);
 
-	size_t size();
-	Iterator iterator();
+	size_t size() const;
+	Iterator iterator() const;
 
-	Polynomial(double x = 0.0, double y = 0.0, double z = 0.0) : x(x), y(y), z(z)
+	Polynomial()
 	{
 	}
 	Polynomial(Monomial m);

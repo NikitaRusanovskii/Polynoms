@@ -14,9 +14,10 @@ Polynomial::Polynomial(Monomial m)
 	add_monomial(m);
 }
 
-bool Polynomial::monomial_comparator(Monomial a, Monomial b)
+bool Polynomial::monomial_comparator(std::variant<Infinity, Monomial> a,
+									 std::variant<Infinity, Monomial> b)
 {
-	return a >= b;
+	return a > b;
 }
 
 void Polynomial::add_monomial(Monomial m)
@@ -30,7 +31,7 @@ void Polynomial::add(double coefficient, signed char x_degree, signed char y_deg
 	add_monomial(Monomial(coefficient, x_degree, y_degree, z_degree));
 }
 
-double Polynomial::solve()
+double Polynomial::solve(double x, double y, double z)
 {
 	double result = 0.0;
 	Iterator iter = monomials.iterator();
@@ -42,7 +43,7 @@ double Polynomial::solve()
 	return result;
 }
 
-Polynomial operator+(Polynomial &p1, Monomial &m1)
+Polynomial operator+(const Polynomial &p1, const Monomial &m1)
 {
 	if (p1.size() == 0)
 		return (Polynomial)m1;
@@ -56,7 +57,6 @@ Polynomial operator+(Polynomial &p1, Monomial &m1)
 		if (current == m1)
 		{
 			result.add_monomial(m1 + current);
-			iter.next();
 		}
 		else if (m1 > current)
 		{
@@ -65,14 +65,14 @@ Polynomial operator+(Polynomial &p1, Monomial &m1)
 		else if (m1 < current)
 		{
 			result.add_monomial(current);
-			iter.next();
 		}
+		iter.next();
 	}
 
 	return result;
 }
 
-Polynomial operator-(Polynomial &p1, Monomial &m1)
+Polynomial operator-(const Polynomial &p1, const Monomial &m1)
 {
 	if (p1.size() == 0)
 		return (Polynomial)m1;
@@ -86,7 +86,6 @@ Polynomial operator-(Polynomial &p1, Monomial &m1)
 		if (current == m1)
 		{
 			result.add_monomial(m1 - current);
-			iter.next();
 		}
 		else if (m1 > current)
 		{
@@ -95,14 +94,14 @@ Polynomial operator-(Polynomial &p1, Monomial &m1)
 		else if (m1 < current)
 		{
 			result.add_monomial(current);
-			iter.next();
 		}
+		iter.next();
 	}
 
 	return result;
 }
 
-Polynomial operator*(Polynomial &p1, Monomial &m1)
+Polynomial operator*(const Polynomial &p1, const Monomial &m1)
 {
 	if (p1.size() == 0)
 		return (Polynomial)m1;
@@ -120,10 +119,13 @@ Polynomial operator*(Polynomial &p1, Monomial &m1)
 	return result;
 }
 
-Polynomial operator+(Polynomial &p1, Polynomial &p2)
+Polynomial operator+(const Polynomial &p1, const Polynomial &p2)
 {
 	auto it1 = p1.iterator();
 	auto it2 = p2.iterator();
+
+	std::cout << "operator+, p1: " << p1;
+	std::cout << "operator+, p2: " << p2;
 
 	Polynomial result;
 
@@ -131,6 +133,11 @@ Polynomial operator+(Polynomial &p1, Polynomial &p2)
 	{
 		Monomial m1 = it1.current();
 		Monomial m2 = it2.current();
+
+		std::cout << "operator+, m1: " << m1 << std::endl;
+		std::cout << "operator+, m2: " << m2 << std::endl;
+
+
 		if (m1 == m2)
 		{
 			result.add_monomial(m1 + m2);
@@ -162,7 +169,7 @@ Polynomial operator+(Polynomial &p1, Polynomial &p2)
 	return result;
 }
 
-Polynomial operator-(Polynomial &p1, Polynomial &p2)
+Polynomial operator-(const Polynomial &p1, const Polynomial &p2)
 {
 	auto it1 = p1.iterator();
 	auto it2 = p2.iterator();
@@ -204,7 +211,7 @@ Polynomial operator-(Polynomial &p1, Polynomial &p2)
 	return result;
 }
 
-Polynomial operator*(Polynomial &p1, Polynomial &p2)
+Polynomial operator*(const Polynomial &p1, const Polynomial &p2)
 {
 	if (p1.size() == 0 || p2.size() == 0)
 		return Polynomial(Monomial(0));
@@ -219,47 +226,38 @@ Polynomial operator*(Polynomial &p1, Polynomial &p2)
 		iter_p1.next();
 		Polynomial mul = p2 * current;
 		result = result + mul;
+		// std::cout << "temp_result: " << result;
 	}
-
 	return result;
 }
 Polynomial Polynomial::operator+=(Polynomial &p1)
 {
-	return operator+(*this, p1);
+	*this = *this + p1;
+	return *this;
 }
 Polynomial Polynomial::operator-=(Polynomial &p1)
 {
-	return operator-(*this, p1);
+	*this = *this - p1;
+	return *this;
 }
 Polynomial Polynomial::operator*=(Polynomial &p1)
 {
-	return operator*(*this, p1);
+	*this = *this * p1;
+	return *this;
 }
 
-std::ostream &operator<<(std::ostream &ostr, Polynomial &p)
+std::ostream &operator<<(std::ostream &ostr, const Polynomial &p)
 {
-	Iterator iter = p.iterator();
-	if (!iter.end())
-	{
-		ostr << iter.current();
-		iter.next();
-		while (!iter.end())
-		{
-			ostr << " + " << iter.current();
-			iter.next();
-		}
-
-		ostr << std::endl;
-	}
+	ostr << p.monomials;
 	return ostr;
 }
 
-size_t Polynomial::size()
+size_t Polynomial::size() const
 {
 	return monomials.size();
 }
 
-Iterator Polynomial::iterator()
+Iterator Polynomial::iterator() const
 {
 	return monomials.iterator();
 }

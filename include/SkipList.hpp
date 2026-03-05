@@ -1,5 +1,6 @@
 #pragma once
 #include <Node.hpp>
+#include <Stack.hpp>
 #include <functional>
 #include <iostream>
 #include <stdexcept>
@@ -91,9 +92,31 @@ template <class T> class SkipList
 	{
 		push_back(value);
 	}
-	void ordered_push(T value, std::function<bool(T a, T b)> comparator)
+	void ordered_push(
+		T value,
+		std::function<bool(std::variant<Infinity, T> a, std::variant<Infinity, T> b)> comparator)
 	{
-		push_back(value);
+		TNode *current = head;
+		TNode *new_node = create(value);
+		int current_layer = MAX_LAYER_SKIP_LIST - 1;
+		auto extended_value = extend_type(value);
+
+		while (current_layer > -1)
+		{
+			if (comparator(current->next(current_layer)->get_value(), extended_value))
+			{
+				if (new_node->active_layer >= current_layer)
+				{
+					TNode *tmp = current->next(current_layer);
+					current->set_next(current_layer, new_node);
+					new_node->set_next(current_layer, tmp);
+				}
+				current_layer -= 1;
+			}
+			else
+				current = current->next(current_layer);
+		}
+		_size++;
 	}
 	TNode *search(T value)
 	{
@@ -165,7 +188,7 @@ template <class T> class SkipList
 		_size = 0;
 	}
 
-	size_t size()
+	size_t size() const
 	{
 		return _size;
 	}
@@ -174,18 +197,26 @@ template <class T> class SkipList
 		return _size == 0;
 	}
 
-	friend std::ostream &operator<<(std::ostream &ostr, SkipList &s)
+	friend std::ostream &operator<<(std::ostream &ostr, const SkipList &s) 
 	{
 		auto iter = s.iterator();
+		Stack<T> st(32);
 		while (iter.has_next())
 		{
-			ostr << iter.current();
+			st.push(iter.current());
 			iter.next();
 		}
+		if (!st.isEmpty())
+			ostr << st.pop();
+		while (!st.isEmpty())
+		{
+			ostr << " + " << st.pop();
+		}
+		ostr << "\n";
 		return ostr;
 	}
 
-	SkipListIterator<T> iterator()
+	SkipListIterator<T> iterator() const
 	{
 		return SkipListIterator(head->next(0), tail);
 	}
@@ -213,30 +244,33 @@ template <class T> class SkipList
 	SkipList(const SkipList &s)
 		: head(create(Infinity::MINUS_INFINITY, MAX_LAYER_SKIP_LIST)),
 		  tail(create(Infinity::PLUS_INFINITY, MAX_LAYER_SKIP_LIST)), _size(0)
-    {
-        for(size_t i = 0; i < MAX_LAYER_SKIP_LIST; i++) {
-            head->set_next(i, tail);
-        }
+	{
+		for (size_t i = 0; i < MAX_LAYER_SKIP_LIST; i++)
+		{
+			head->set_next(i, tail);
+		}
 
-        TNode* current = s.head->next(0);
-        while(current != s.tail) {
-            push_back(std::get<T>(current->get_value()));
-            current = current->next(0);
-        }
+		TNode *current = s.head->next(0);
+		while (current != s.tail)
+		{
+			push_back(std::get<T>(current->get_value()));
+			current = current->next(0);
+		}
 	}
 	SkipList &operator=(const SkipList &s)
 	{
-        if (this == &s)
-            return *this;
-        
-        clear();
-        TNode* current = s.head->next(0);
-        while(current != s.tail) {
-            push_back(std::get<T>(current->get_value()));
-            current = current->next(0);
-        }
-        
-        return *this;
+		if (this == &s)
+			return *this;
+
+		clear();
+		TNode *current = s.head->next(0);
+		while (current != s.tail)
+		{
+			push_back(std::get<T>(current->get_value()));
+			current = current->next(0);
+		}
+
+		return *this;
 	}
 
 	~SkipList()

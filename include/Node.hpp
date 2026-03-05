@@ -21,9 +21,19 @@ enum class Infinity
 
 static size_t layer_count_randomizer(int max_level)
 {
-	static std::mt19937 rng{std::random_device{}()};
-	static std::uniform_int_distribution<uint64_t> dist;
-	return (size_t)(dist(rng) % max_level + 1);
+	size_t result = 1, tmp;
+	for (int i = 1; i < max_level; i++)
+	{
+		static std::mt19937 rng{std::random_device{}()};
+		static std::uniform_int_distribution<uint64_t> dist;
+		tmp = (size_t)(dist(rng) % 2);
+		if (tmp == 0)
+		{
+			return result;
+		}
+		result += tmp;
+	}
+	return result;
 }
 
 template <class T> struct SNode
@@ -66,6 +76,14 @@ template <class T> struct SNode
 		for (int i = 0; i < MAX_LAYER_SKIP_LIST; i++)
 		{
 			tower[i] = nullptr;
+		}
+	}
+
+	void DEBUG_PRINT()
+	{
+		for (int i = 0; i < active_layer; i++)
+		{
+			std::cout << tower[i];
 		}
 	}
 };
