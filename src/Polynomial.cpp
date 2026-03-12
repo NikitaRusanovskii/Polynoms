@@ -11,7 +11,7 @@ using Iterator = LinkedListIterator<Monomial>;
 
 Polynomial::Polynomial(Monomial m)
 {
-	add_monomial(m);
+	push_back(m);
 }
 
 bool Polynomial::monomial_comparator(std::variant<Infinity, Monomial> a,
@@ -25,13 +25,17 @@ void Polynomial::add_monomial(Monomial m)
 	monomials.ordered_push(m, monomial_comparator);
 }
 
+void Polynomial::push_back(Monomial m) {
+	monomials.push_back(m);
+}
+
 void Polynomial::add(double coefficient, signed char x_degree, signed char y_degree,
 					 signed char z_degree)
 {
 	add_monomial(Monomial(coefficient, x_degree, y_degree, z_degree));
 }
 
-double Polynomial::solve(double x, double y, double z)
+double Polynomial::solve(double x, double y, double z) const
 {
 	double result = 0.0;
 	Iterator iter = monomials.iterator();
@@ -51,22 +55,29 @@ Polynomial operator+(const Polynomial &p1, const Monomial &m1)
 	Polynomial result;
 	Iterator iter = p1.iterator();
 
+	bool m1_used = false;
 	while (!iter.end())
 	{
 		Monomial current = iter.current();
 		if (current == m1)
 		{
-			result.add_monomial(m1 + current);
+			result.push_back(m1 + current);
+			m1_used = true;
+			iter.next();
 		}
-		else if (m1 > current)
+		else if (m1 < current && !m1_used) //
 		{
-			result.add_monomial(m1);
+			result.push_back(m1);
+			m1_used = true;
 		}
-		else if (m1 < current)
+		else if (m1 > current) //
 		{
-			result.add_monomial(current);
+			result.push_back(current);
+			iter.next();
 		}
-		iter.next();
+	}
+	if (!m1_used) {
+		result.push_back(m1);
 	}
 
 	return result;
@@ -80,24 +91,30 @@ Polynomial operator-(const Polynomial &p1, const Monomial &m1)
 	Polynomial result;
 	Iterator iter = p1.iterator();
 
+	bool m1_used = false;
 	while (!iter.end())
 	{
 		Monomial current = iter.current();
 		if (current == m1)
 		{
-			result.add_monomial(m1 - current);
+			result.push_back(m1 - current);
+			iter.next();
+			m1_used = true;
 		}
-		else if (m1 > current)
+		else if (m1 < current && !m1_used) //
 		{
-			result.add_monomial(m1);
+			result.push_back(m1);
+			m1_used = true;
 		}
-		else if (m1 < current)
+		else if (m1 > current) //
 		{
-			result.add_monomial(current);
+			result.push_back(current);
+			iter.next();
 		}
-		iter.next();
 	}
-
+	if(!m1_used) {
+		result.push_back(m1);
+	}
 	return result;
 }
 
@@ -112,7 +129,7 @@ Polynomial operator*(const Polynomial &p1, const Monomial &m1)
 	while (!iter.end())
 	{
 		Monomial current = iter.current();
-		result.add_monomial(current * m1);
+		result.push_back(current * m1);
 		iter.next();
 	}
 
@@ -124,45 +141,37 @@ Polynomial operator+(const Polynomial &p1, const Polynomial &p2)
 	auto it1 = p1.iterator();
 	auto it2 = p2.iterator();
 
-	std::cout << "operator+, p1: " << p1;
-	std::cout << "operator+, p2: " << p2;
-
 	Polynomial result;
 
 	while (!it1.end() && !it2.end())
 	{
 		Monomial m1 = it1.current();
 		Monomial m2 = it2.current();
-
-		std::cout << "operator+, m1: " << m1 << std::endl;
-		std::cout << "operator+, m2: " << m2 << std::endl;
-
-
 		if (m1 == m2)
 		{
-			result.add_monomial(m1 + m2);
+			result.push_back(m1 + m2);
 			it1.next();
 			it2.next();
 		}
-		else if (m1 > m2)
+		else if (m1 < m2) //
 		{
-			result.add_monomial(m1);
+			result.push_back(m1);
 			it1.next();
 		}
 		else
 		{
-			result.add_monomial(m2);
+			result.push_back(m2);
 			it2.next();
 		}
 	}
 	while (!it1.end())
 	{
-		result.add_monomial(it1.current());
+		result.push_back(it1.current());
 		it1.next();
 	}
 	while (!it2.end())
 	{
-		result.add_monomial(it2.current());
+		result.push_back(it2.current());
 		it2.next();
 	}
 
@@ -182,29 +191,29 @@ Polynomial operator-(const Polynomial &p1, const Polynomial &p2)
 		Monomial m2 = it2.current();
 		if (m1 == m2)
 		{
-			result.add_monomial(m1 - m2);
+			result.push_back(m1 - m2);
 			it1.next();
 			it2.next();
 		}
-		else if (m1 > m2)
+		else if (m1 < m2) // 
 		{
-			result.add_monomial(m1);
+			result.push_back(m1);
 			it1.next();
 		}
 		else
 		{
-			result.add_monomial(m2);
+			result.push_back(m2);
 			it2.next();
 		}
 	}
 	while (!it1.end())
 	{
-		result.add_monomial(it1.current());
+		result.push_back(it1.current());
 		it1.next();
 	}
 	while (!it2.end())
 	{
-		result.add_monomial(it2.current());
+		result.push_back(it2.current());
 		it2.next();
 	}
 
@@ -230,19 +239,35 @@ Polynomial operator*(const Polynomial &p1, const Polynomial &p2)
 	}
 	return result;
 }
-Polynomial Polynomial::operator+=(Polynomial &p1)
+Polynomial Polynomial::operator+=(const Polynomial &p1)
 {
 	*this = *this + p1;
 	return *this;
 }
-Polynomial Polynomial::operator-=(Polynomial &p1)
+Polynomial Polynomial::operator-=(const Polynomial &p1)
 {
 	*this = *this - p1;
 	return *this;
 }
-Polynomial Polynomial::operator*=(Polynomial &p1)
+Polynomial Polynomial::operator*=(const Polynomial &p1)
 {
 	*this = *this * p1;
+	return *this;
+}
+
+Polynomial Polynomial::operator+=(const Monomial &m1)
+{
+	*this = *this + m1;
+	return *this;
+}
+Polynomial Polynomial::operator-=(const Monomial &m1)
+{
+	*this = *this - m1;
+	return *this;
+}
+Polynomial Polynomial::operator*=(const Monomial &m1)
+{
+	*this = *this * m1;
 	return *this;
 }
 

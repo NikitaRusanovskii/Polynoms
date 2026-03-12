@@ -4,6 +4,7 @@
 #include <functional>
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 
 template <class T> class SkipListIterator
 {
@@ -57,40 +58,35 @@ template <class T> class SkipList
 
 	size_t _size;
 	TNode *head, *tail;
+	TNode *last_element_tower[MAX_LAYER_SKIP_LIST];
 
 	std::variant<Infinity, T> extend_type(T value)
 	{
 		return std::variant<Infinity, T>(value);
 	}
 
+
+
   public:
 	void push_back(T value)
 	{
-		TNode *current = head;
 		TNode *new_node = create(value);
-		int current_layer = MAX_LAYER_SKIP_LIST - 1;
-		auto extended_value = extend_type(value);
-
-		while (current_layer > -1)
-		{
-			if (current->next(current_layer)->get_value() >= extended_value)
-			{
-				if (new_node->active_layer >= current_layer)
-				{
-					TNode *tmp = current->next(current_layer);
-					current->set_next(current_layer, new_node);
-					new_node->set_next(current_layer, tmp);
-				}
-				current_layer -= 1;
-			}
-			else if (current->next(current_layer)->get_value() < extended_value)
-				current = current->next(current_layer);
+		for(int i = 0; i < new_node->active_layer; i++) {
+			new_node->set_next(i, last_element_tower[i]->next(i));
+			last_element_tower[i]->set_next(i, new_node);
+			last_element_tower[i] = new_node;
 		}
 		_size++;
 	}
 	void push_front(T value)
 	{
-		push_back(value);
+		TNode *new_node = create(value);
+		for(int i = 0; i < new_node->active_layer; i++) {
+			new_node->set_next(i, head->tower[i]->next(i));
+			head->tower[i]->set_next(i, new_node);
+			head->tower[i] = new_node;
+		}
+		_size++;
 	}
 	void ordered_push(
 		T value,
@@ -105,7 +101,7 @@ template <class T> class SkipList
 		{
 			if (comparator(current->next(current_layer)->get_value(), extended_value))
 			{
-				if (new_node->active_layer >= current_layer)
+				if (new_node->active_layer > current_layer)
 				{
 					TNode *tmp = current->next(current_layer);
 					current->set_next(current_layer, new_node);
@@ -225,31 +221,29 @@ template <class T> class SkipList
 		: head(create(Infinity::MINUS_INFINITY, MAX_LAYER_SKIP_LIST)),
 		  tail(create(Infinity::PLUS_INFINITY, MAX_LAYER_SKIP_LIST)), _size(0)
 	{
-
-		for (size_t i = 0; i < MAX_LAYER_SKIP_LIST; i++)
-		{
-			head->set_next(i, tail);
-		}
+	    for (size_t i = 0; i < MAX_LAYER_SKIP_LIST; ++i) {
+        	head->set_next(i, tail);
+        	last_element_tower[i] = head;
+    	}
 		push_back(value);
 	}
 	SkipList()
 		: head(create(Infinity::MINUS_INFINITY, MAX_LAYER_SKIP_LIST)),
 		  tail(create(Infinity::PLUS_INFINITY, MAX_LAYER_SKIP_LIST)), _size(0)
 	{
-		for (size_t i = 0; i < MAX_LAYER_SKIP_LIST; i++)
-		{
-			head->set_next(i, tail);
-		}
+		for (size_t i = 0; i < MAX_LAYER_SKIP_LIST; ++i) {
+        	head->set_next(i, tail);
+        	last_element_tower[i] = head;
+    	}
 	}
 	SkipList(const SkipList &s)
 		: head(create(Infinity::MINUS_INFINITY, MAX_LAYER_SKIP_LIST)),
 		  tail(create(Infinity::PLUS_INFINITY, MAX_LAYER_SKIP_LIST)), _size(0)
 	{
-		for (size_t i = 0; i < MAX_LAYER_SKIP_LIST; i++)
-		{
-			head->set_next(i, tail);
-		}
-
+	    for (size_t i = 0; i < MAX_LAYER_SKIP_LIST; ++i) {
+    	    head->set_next(i, tail);
+    	    last_element_tower[i] = head;
+    	}
 		TNode *current = s.head->next(0);
 		while (current != s.tail)
 		{
@@ -263,6 +257,12 @@ template <class T> class SkipList
 			return *this;
 
 		clear();
+
+		for (size_t i = 0; i < MAX_LAYER_SKIP_LIST; ++i) {
+        	last_element_tower[i] = head;
+	    }
+
+
 		TNode *current = s.head->next(0);
 		while (current != s.tail)
 		{
