@@ -1,5 +1,9 @@
 #include <Polynomial.hpp>
 #include <Tools.hpp>
+#include <PolynomialANTLRLexer.h>
+#include <PolynomialANTLRParser.h>
+#include <GrammarVisitor.hpp>
+#include <antlr4-runtime.h>
 
 #if USE_SKIP_LIST
 using List = SkipList<Monomial>;
@@ -9,9 +13,31 @@ using List = LinkedList<Monomial>;
 using Iterator = LinkedListIterator<Monomial>;
 #endif
 
+using namespace antlr4;
+
 Polynomial::Polynomial(Monomial m)
 {
 	push_back(m);
+}
+
+Polynomial::Polynomial(std::string polynomial_in_text)
+{
+	std::string input = polynomial_in_text;
+	ANTLRInputStream inputStream(input);
+	PolynomialANTLRLexer lexer(&inputStream);
+	CommonTokenStream tokens(&lexer);
+	PolynomialANTLRParser parser(&tokens);
+
+	tree::ParseTree *tree = parser.polynomial_rule();
+
+	if (parser.getNumberOfSyntaxErrors() > 0)
+	{
+		std::cerr << "Syntax error!" << std::endl;
+	}
+
+	GrammarVisitor gr;
+	gr.visit(tree);
+    *this = gr.get();
 }
 
 bool Polynomial::monomial_comparator(std::variant<Infinity, Monomial> a,
@@ -25,7 +51,8 @@ void Polynomial::add_monomial(Monomial m)
 	monomials.ordered_push(m, monomial_comparator);
 }
 
-void Polynomial::push_back(Monomial m) {
+void Polynomial::push_back(Monomial m)
+{
 	monomials.push_back(m);
 }
 
@@ -34,6 +61,12 @@ void Polynomial::add(double coefficient, signed char x_degree, signed char y_deg
 {
 	add_monomial(Monomial(coefficient, x_degree, y_degree, z_degree));
 }
+
+void Polynomial::add(const Monomial& m)
+{
+	add_monomial(m);
+}
+
 
 double Polynomial::solve(double x, double y, double z) const
 {
@@ -76,7 +109,8 @@ Polynomial operator+(const Polynomial &p1, const Monomial &m1)
 			iter.next();
 		}
 	}
-	if (!m1_used) {
+	if (!m1_used)
+	{
 		result.push_back(m1);
 	}
 
@@ -112,7 +146,8 @@ Polynomial operator-(const Polynomial &p1, const Monomial &m1)
 			iter.next();
 		}
 	}
-	if(!m1_used) {
+	if (!m1_used)
+	{
 		result.push_back(m1);
 	}
 	return result;
@@ -195,7 +230,7 @@ Polynomial operator-(const Polynomial &p1, const Polynomial &p2)
 			it1.next();
 			it2.next();
 		}
-		else if (m1 < m2) // 
+		else if (m1 < m2) //
 		{
 			result.push_back(m1);
 			it1.next();
